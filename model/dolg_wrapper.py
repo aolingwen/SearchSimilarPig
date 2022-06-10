@@ -1,10 +1,10 @@
 #condig:utf8
 
-from model.dolg import DolgNet
+from model.model.dolg import DolgNet
 import numpy as np
 from PIL import Image
-from dataset.transform import image_transform
-from config import Config
+from model.dataset.transform import image_transform
+from model.config import Config
 import torch
 
 

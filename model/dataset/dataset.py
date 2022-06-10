@@ -1,10 +1,9 @@
 import os
-import jpeg4py as jpeg
 import pandas as pd
 from sklearn import preprocessing
 from torch.utils.data import Dataset
-from dataset.transform import image_transform
-from config import Config
+from model.dataset.transform import image_transform
+from model.config import Config
 from PIL import Image
 import numpy as np
 from PIL import ImageFile

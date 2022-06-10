@@ -1,7 +1,7 @@
 from pytorch_lightning.utilities.seed import seed_everything
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
-from model.dolg import DolgNet
+from model.dolg_wrapper import DolgNet
 from config import Config
 
 

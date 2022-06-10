@@ -4,7 +4,7 @@ import requests
 import re
 import time
 import zipfile
-from model.dolg import DOLGWrapper
+from model.dolg_wrapper import DOLGWrapper
 
 
 import cx_Oracle as cx

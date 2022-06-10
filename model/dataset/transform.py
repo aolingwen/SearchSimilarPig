@@ -1,6 +1,6 @@
 import albumentations as A
 import albumentations.pytorch
-from config import Config
+from model.config import Config
 
 
 image_transform = A.Compose([

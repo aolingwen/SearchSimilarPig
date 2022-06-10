@@ -7,10 +7,10 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningModule
 
-from config import Config
-from model.gem_pool import GeM
-from model.arcface import ArcFace
-from dataset.dataset import LmkRetrDataset
+from model.config import Config
+from model.model.gem_pool import GeM
+from model.model.arcface import ArcFace
+from model.dataset.dataset import LmkRetrDataset
 
 
 class MultiAtrous(nn.Module):

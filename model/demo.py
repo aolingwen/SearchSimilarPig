@@ -1,11 +1,11 @@
 from pytorch_lightning.utilities.seed import seed_everything
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
-from model.dolg import DolgNet
-from config import Config
+from model.dolg_wrapper import DolgNet
+from model.config import Config
 import numpy as np
 from PIL import Image
-from dataset.transform import image_transform
+from model.dataset.transform import image_transform
 import numpy as np
 import faiss
 import time
@@ -38,7 +38,7 @@ SEARCH=True
 
 if SEARCH:
     model.eval()
-    img = np.array(Image.open(r'C:\Users\MSI-NB\Desktop\18e13951-4f3a-4bd3-94b9-3e0815ff4887.jpg'))
+    img = np.array(Image.open(r'C:\Users\MSI-NB\Desktop\ttt.jpg'))
     img = image_transform(image=img)['image']
     img = img.reshape(1, img.shape[0], img.shape[1], img.shape[2])
     query = model(img.type(torch.cuda.FloatTensor)).cpu().detach().numpy().astype(np.float32).reshape([1,-1])
@@ -60,6 +60,7 @@ if SEARCH:
     faiss.normalize_L2(all_feature)
     index.train(all_feature)
     index.add(all_feature)
+    # index.add_with_ids(all_feature, all_path)
     print(index.ntotal)            # 打印被构建索引的向量数量
 
     index.nprobe = 2
