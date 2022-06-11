@@ -1,2 +1,0 @@
-D:/code/SearchSimilarPig/model/logs/ep015-loss0.031-val_loss0.059.pth filter=lfs diff=lfs merge=lfs -text
-D:/code/SearchSimilarPig/model/logs/mymodel-epoch=53-train_loss=0.02.ckpt filter=lfs diff=lfs merge=lfs -text
