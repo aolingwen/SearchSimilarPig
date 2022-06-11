@@ -13,7 +13,7 @@ class Config:
     input_dim = 3
     epochs = 35
     lr = 1e-4
-    num_of_classes = 585
+    num_of_classes = 7481
     pretrained = True
     model_name = 'resnet101'
     seed = 42
