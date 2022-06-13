@@ -6,10 +6,12 @@ import re
 import zipfile
 from model.dolg_wrapper import DOLGWrapper
 from model.filter_wrapper import FilterWrapper
-import cv2
+import math
 import cx_Oracle as cx
 import numpy as np
 from utils import *
+import traceback
+import shutil
 
 # Oracle的封装，外部不会主动调用
 class OracleWrapper:
@@ -32,8 +34,9 @@ class OracleWrapper:
 
 # 数据加载器
 class DataLoader:
-    def __init__(self, test_data_path, logger, debug=True):
+    def __init__(self, test_data_path, max_batch, logger, debug=True):
         self.__logger = logger
+        self.__max_batch = max_batch
         self.__debug = debug
         if self.__debug is False:
             self.__oracle_obj = OracleWrapper('ahicquery', 'ahicquery321', '10.0.5.236/ahdbsrv2')
@@ -57,14 +60,17 @@ class DataLoader:
         if self.__debug:
             if os.path.exists(os.path.join(self.__test_data_path, registno)):
                 start = time.time()
-                interested_img_path = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
+                interested_img_path, page_ids = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
                 for i in range(len(interested_img_path)):
                     interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
-                output = self.__filter.predict(interested_img_path)
+                output = []
+                for i in range(0, int(math.ceil(len(interested_img_path)/self.__max_batch))):
+                    temp_output = self.__filter.predict(interested_img_path[i*self.__max_batch:(i+1)*self.__max_batch]).tolist()
+                    output.extend(temp_output)
                 for i, o in enumerate(output):
                     if o == 1:
                         feature = self.__dolg.embedding(interested_img_path[i])
-                        feature_data.append(feature)
+                        feature_data.append({'registno':registno, 'feature':feature, 'page_id':page_ids[i]})
                 end = time.time()
                 self.__logger.debug('get_embedding_data_for_query() cost %ss' % str(end-start))
         else:
@@ -78,21 +84,34 @@ class DataLoader:
                 response = requests.get(data_url)
                 with open(os.path.join('./', registno + '.zip'), 'wb') as f:
                     f.write(response.content)
-
                 f = zipfile.ZipFile(os.path.join('./', registno + '.zip'), 'r')  # 压缩文件位置
                 if not os.path.exists(os.path.join('./', registno)):
                     os.mkdir(os.path.join('./', registno))
                 for file in f.namelist():
                     f.extract(file, os.path.join('./', registno))  # 解压位置
                 f.close()
-                os.remove(os.path.join('./', no + '.zip'))
-                for p in os.listdir(os.path.join('./', registno)):
-                    pass
+                os.remove(os.path.join('./', registno + '.zip'))
+                start = time.time()
+                interested_img_path, page_ids = parse_xml(os.path.join('./', registno, 'busi.xml'))
+                for i in range(len(interested_img_path)):
+                    interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
+                output = []
+                for i in range(0, int(math.ceil(len(interested_img_path)/self.__max_batch))):
+                    temp_output = self.__filter.predict(interested_img_path[i*self.__max_batch:(i+1)*self.__max_batch]).tolist()
+                    output.extend(temp_output)
+                for i, o in enumerate(output):
+                    if o == 1:
+                        feature = self.__dolg.embedding(interested_img_path[i])
+                        feature_data.append({'registno': registno, 'feature': feature, 'page_id': page_ids[i]})
+                end = time.time()
+                self.__logger.debug('get_embedding_data_for_query() cost %ss' % str(end - start))
+                shutil.rmtree(os.path.join('./', registno))
             except Exception as e:
-                print(e)
+                self.__logger.error(traceback.format_exc())
+                if os.path.exists(os.path.join('./', registno)):
+                    shutil.rmtree(os.path.join('./', registno))
+                raise e
         return feature_data
-
-
 
     def get_embedding_data_for_index(self, begin_date=None, end_date=None, riskcode='IPI'):
         '''
@@ -129,18 +148,39 @@ class DataLoader:
                         f.extract(file, os.path.join('./', no))  # 解压位置
                     f.close()
                     os.remove(os.path.join('./', no + '.zip'))
-                    for p in os.listdir(os.path.join('./', no)):
-                        pass
+                    start = time.time()
+                    interested_img_path, page_ids = parse_xml(os.path.join('./', no, 'busi.xml'))
+                    for i in range(len(interested_img_path)):
+                        interested_img_path[i] = os.path.join(self.__test_data_path, no, interested_img_path[i])
+                    output = []
+                    for i in range(0, int(math.ceil(len(interested_img_path) / self.__max_batch))):
+                        temp_output = self.__filter.predict(
+                            interested_img_path[i * self.__max_batch:(i + 1) * self.__max_batch]).tolist()
+                        output.extend(temp_output)
+                    for i, o in enumerate(output):
+                        if o == 1:
+                            feature = self.__dolg.embedding(interested_img_path[i])
+                            feature_data.append({'registno': no, 'feature': feature, 'page_id': page_ids[i]})
+                    end = time.time()
+                    self.__logger.debug('get_embedding_data_for_query() cost %ss' % str(end - start))
+                    shutil.rmtree(os.path.join('./', no))
                 except Exception as e:
-                    print(e)
+                    self.__logger.error(traceback.format_exc())
+                    if os.path.exists(os.path.join('./', no)):
+                        shutil.rmtree(os.path.join('./', no))
+                    raise e
         else:
             for registno in os.listdir(self.__test_data_path):
-                interested_img_path = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
-                for p in interested_img_path:
-                    img = cv2.imread(os.path.join(self.__test_data_path, registno, p))
-                    if self.__filter.predict(img) > 0.5:
-                        feature = self.__dolg.embedding(os.path.join(self.__test_data_path, registno, p))
-                        dd = {'registno':registno, 'feature':feature}
-                        feature_data.append(dd)
+                interested_img_path, page_ids = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
+                for i in range(len(interested_img_path)):
+                    interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
+                output = []
+                for i in range(0, int(math.ceil(len(interested_img_path)/self.__max_batch))):
+                    temp_output = self.__filter.predict(interested_img_path[i*self.__max_batch:(i+1)*self.__max_batch]).tolist()
+                    output.extend(temp_output)
+                for i, o in enumerate(output):
+                    if o == 1:
+                        feature = self.__dolg.embedding(interested_img_path[i])
+                        feature_data.append({'registno': registno, 'feature': feature, 'page_id': page_ids[i]})
         return feature_data
 

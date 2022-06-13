@@ -17,3 +17,5 @@ DEBUG = True
 TEST_IMG_DATA_PATH = './test_data'
 #日志目录
 LOG_PATH = './logs.txt'
+#过滤器模型最大BATCH数量
+FILTER_MODEL_MAX_BATCH = 8

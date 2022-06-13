@@ -22,7 +22,7 @@ class FilterWrapper:
     def predict(self, paths):
         images = []
         for p in paths:
-            image = cv2.imread(p)
+            image = cv2.imdecode(np.fromfile(p, dtype=np.uint8), -1)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             image = cv2.resize(image, (224, 224))
             image = image / 255.0
