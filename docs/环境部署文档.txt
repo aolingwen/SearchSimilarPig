@@ -1,0 +1,5 @@
+1.安装anaconda，python版本为3.8.x
+2. 安装常规模块（觉得慢可以配置pip源）
+pip install -r requirements.txt
+3. 安装faiss
+conda install -c pytorch faiss-cpu
