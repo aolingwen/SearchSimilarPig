@@ -19,3 +19,7 @@ TEST_IMG_DATA_PATH = './test_data'
 LOG_PATH = './logs.txt'
 #过滤器模型最大BATCH数量
 FILTER_MODEL_MAX_BATCH = 8
+#redis IP
+REDIS_IP='127.0.0.1'
+#redis 端口
+REDIS_PORT=6379
