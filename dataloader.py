@@ -12,6 +12,7 @@ import numpy as np
 from utils import *
 import traceback
 import shutil
+import torch
 
 # Oracle的封装，外部不会主动调用
 class OracleWrapper:
@@ -45,7 +46,8 @@ class DataLoader:
             if not os.path.exists(self.__test_data_path):
                 os.mkdir(self.__test_data_path)
         self.__dolg = DOLGWrapper('./model/logs/mymodel-epoch=53-train_loss=0.02.ckpt')
-        self.__filter = FilterWrapper('./model/logs/ep015-loss0.031-val_loss0.059.pth')
+        flag = torch.cuda.is_available()
+        self.__filter = FilterWrapper('./model/logs/ep015-loss0.031-val_loss0.059.pth', flag)
 
 
     def get_embedding_data_for_query(self, registno):
@@ -120,7 +122,7 @@ class DataLoader:
         :param begin_date: 起始日期，若debug为True，则忽略
         :param end_date: 截止日期，若debug为True，则忽略
         :param riskcode: 保险种类id，默认IPI
-        :return:  [{'registno':'RIPI202021010600000078', 'feature':[0.255,0235..,,..]}, {'registno':'RIPI202021010600000079', 'feature':[0.255,0235..,,..]}]
+        :return:  [{'registno':'RIPI202021010600000078', 'feature':[0.255,0235..,,..], 'page_id': ['adsfasdfww', 'adsfasdfww']}, {'registno':'RIPI202021010600000079', 'feature':[0.255,0235..,,..], 'page_id': ['adsfasdfww', 'adsfasdfww']}]
         '''
         # 返回的结果
         feature_data = []

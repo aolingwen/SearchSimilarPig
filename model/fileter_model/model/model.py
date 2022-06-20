@@ -22,6 +22,6 @@ class FilterNet(nn.Module):
 
 if __name__ == "__main__":
     net = FilterNet()
-    data = np.random.normal(size=(1, 3, 360, 120))
+    data = np.random.normal(size=(1, 3, 224, 224))
     data = torch.FloatTensor(data)
     print(net(data))
