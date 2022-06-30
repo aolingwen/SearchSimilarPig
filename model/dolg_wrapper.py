@@ -25,8 +25,8 @@ class DOLGWrapper:
         img = img.reshape(1, img.shape[0], img.shape[1], img.shape[2])
         flag = torch.cuda.is_available()
         if flag:
-            query = self.model(img.type(torch.cuda.FloatTensor)).cpu().detach().numpy().astype(np.float32).reshape([1, -1])
+            query = self.model(img.type(torch.cuda.FloatTensor)).cpu().detach().numpy().astype(np.float32).reshape([-1])
         else:
-            query = self.model(img.type(torch.FloatTensor)).cpu().detach().numpy().astype(np.float32).reshape([1, -1])
+            query = self.model(img.type(torch.FloatTensor)).cpu().detach().numpy().astype(np.float32).reshape([-1])
         query = np.ascontiguousarray(query)
         return query

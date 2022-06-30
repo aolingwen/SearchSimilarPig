@@ -15,23 +15,28 @@ class RedisWrapper:
         self.__registno_prefix = 'SearchSimilarImages:KVStore:RegistNO2PageIDS:'
 
 
+    def delete_all_data(self):
+        conn = redis.Redis(connection_pool=self.__pool)
+        for elem in conn.keys("SearchSimilarImages:KVStore:FaissID2RegistNO*"):
+            conn.delete(elem)
+        for elem in conn.keys("SearchSimilarImages:KVStore:RegistNO2PageIDS*"):
+            conn.delete(elem)
+
+
     def add_data(self, data):
         '''
         将data写入redis，data需要是个列表
-        :param data:[{'id':123, 'registno':'RIPI202021010700000068', 'pageids':['1040a4f1705441398dcfb3b7d09835f2',
-        '0b317c05cd6c4db894dc8c00e924d802', 'a4a40a3f089e4c50b834a5233b2f7838']},
-        {'id':124, 'registno':'RIPI202021010700000069', 'pageids':['2040a4f1705441398dcfb3b7d09835f2',
-        '0b317c05cd6c4db894dc8c00e924d801', 'a4a40a3f089e4c50b834a5233b2f7839']}]
+        :param data:[{'id':123, 'registno':'RIPI202021010700000068', 'page_id':'1040a4f1705441398dcfb3b7d09835f2'},
+        {'id':124, 'registno':'RIPI202021010700000069', 'page_id':'2040a4f1705441398dcfb3b7d09835f2'}]
         :return: None
         '''
         conn = redis.Redis(connection_pool=self.__pool)
         for d in data:
             id = d['id']
             registno = d['registno']
-            pageids = d['pageids']
+            page_id = d['page_id']
             conn.set(self.__faiss_prefix+str(id), registno)
-            for pageid in pageids:
-                conn.lpush(self.__registno_prefix+registno, pageid)
+            conn.lpush(self.__registno_prefix+registno, page_id)
 
     def search_registno_by_id(self, id):
         '''

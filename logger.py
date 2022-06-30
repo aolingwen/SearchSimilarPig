@@ -16,6 +16,7 @@ class Logger(object):
         """
         # 创建一个日志器logger并设置其日志级别为DEBUG
         self.logger = logging.getLogger(path)
+        self.logger.propagate = False
         self.logger.setLevel(logging.DEBUG)
 
         # 创建一个日志器logger并设置其日志级别为DEBUG
