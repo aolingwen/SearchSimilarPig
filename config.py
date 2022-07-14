@@ -22,12 +22,12 @@ LOGGING_CONFIG = {
         "default": {
             "formatter": "default",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./log.txt"
+            "filename": "./logs.txt"
         },
         "access": {
             "formatter": "access",
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": "./log.txt"
+            "filename": "./logs.txt"
 
         },
     },
@@ -60,11 +60,11 @@ REDIS_PORT=6379
 #embedding size
 EMBEDDING_SIZE=512
 #聚类类别数量
-NLIST = 15
+NLIST = 8
 #TOP K
 K = 5
 #nprobe
 NPROBE = 2
 #初始化时加载数据的起始日期
-START_DATE = '2022-06-22 00:00:00'
+START_DATE = '2022-07-14 18:20:00'
 

@@ -10,7 +10,7 @@ from search_engine import SearchEngine
 from pydantic import BaseModel
 
 
-log = Logger('./log.txt')
+log = Logger(LOG_PATH)
 se = SearchEngine(log)
 app = FastAPI()
 
