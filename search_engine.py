@@ -62,14 +62,16 @@ class SearchEngine:
             pageids.append(data['page_id'])
         query = np.ascontiguousarray(features)
         start = time.time()
-        D, I = self.__faiss_index.search(query, self.__k)
+        D, I = self.__faiss_index.search(query, 50)
         end = time.time()
         self.__logger.debug('faiss search cost %ss' % str(end - start))
         for i in range(len(I)):
             tmp_data = {'PAGE_ID':pageids[i], 'result':[]}
             for j, id in enumerate(I[i]):
-                tmp_result = {'LicenseNo':self.__rediswrapper.search_registno_by_id(id), 'CosineSimilarity':float(D[i][j])}
-                tmp_data['result'].append(tmp_result)
+                result_registno = self.__rediswrapper.search_registno_by_id(id)
+                if len(tmp_data['result']) < self.__k and result_registno != registno:
+                    tmp_result = {'LicenseNo':result_registno, 'CosineSimilarity':float(D[i][j])}
+                    tmp_data['result'].append(tmp_result)
             result['result'].append(tmp_data)
         self.__logger.debug("==========search end===========")
         return result
