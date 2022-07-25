@@ -76,6 +76,7 @@ class DataLoader:
             if os.path.exists(os.path.join(self.__test_data_path, registno)):
                 start = time.time()
                 interested_img_path, page_ids = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
+                page_urls = interested_img_path.copy()
                 for i in range(len(interested_img_path)):
                     interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
                 output = []
@@ -85,7 +86,7 @@ class DataLoader:
                 for i, o in enumerate(output):
                     if o == 1:
                         feature = self.__dolg.embedding(interested_img_path[i])
-                        feature_data.append({'registno':registno, 'feature':feature, 'page_id':page_ids[i]})
+                        feature_data.append({'registno':registno, 'feature':feature, 'page_url':page_urls[i]})
                 end = time.time()
                 self.__logger.debug('get_embedding_data_for_query() cost %ss' % str(end-start))
         else:
@@ -108,6 +109,7 @@ class DataLoader:
                 os.remove(os.path.join('./', registno + '.zip'))
                 start = time.time()
                 interested_img_path, page_ids = parse_xml(os.path.join('./', registno, 'busi.xml'))
+                page_urls = interested_img_path.copy()
                 for i in range(len(interested_img_path)):
                     interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
                 output = []
@@ -117,7 +119,7 @@ class DataLoader:
                 for i, o in enumerate(output):
                     if o == 1:
                         feature = self.__dolg.embedding(interested_img_path[i])
-                        feature_data.append({'registno': registno, 'feature': feature, 'page_id': page_ids[i]})
+                        feature_data.append({'registno': registno, 'feature': feature, 'page_url': page_urls[i]})
                 end = time.time()
                 self.__logger.debug('get_embedding_data_for_query() cost %ss' % str(end - start))
                 shutil.rmtree(os.path.join('./', registno))
@@ -166,6 +168,7 @@ class DataLoader:
                     os.remove(os.path.join('./', no + '.zip'))
                     start = time.time()
                     interested_img_path, page_ids = parse_xml(os.path.join('./', no, 'busi.xml'))
+                    page_urls = interested_img_path.copy()
                     for i in range(len(interested_img_path)):
                         if self.__debug:
                             interested_img_path[i] = os.path.join(self.__test_data_path, no, interested_img_path[i])
@@ -179,7 +182,7 @@ class DataLoader:
                     for i, o in enumerate(output):
                         if o == 1:
                             feature = self.__dolg.embedding(interested_img_path[i])
-                            feature_data.append({'registno': no, 'feature': feature, 'page_id': page_ids[i]})
+                            feature_data.append({'registno': no, 'feature': feature, 'page_url': page_urls[i]})
                     end = time.time()
                     self.__logger.debug('get_embedding_data_for_index() cost %ss' % str(end - start))
                     shutil.rmtree(os.path.join('./', no))
@@ -191,6 +194,7 @@ class DataLoader:
         else:
             for registno in os.listdir(self.__test_data_path):
                 interested_img_path, page_ids = parse_xml(os.path.join(self.__test_data_path, registno, 'busi.xml'))
+                page_urls = interested_img_path.copy()
                 for i in range(len(interested_img_path)):
                     interested_img_path[i] = os.path.join(self.__test_data_path, registno, interested_img_path[i])
                 output = []
@@ -200,7 +204,7 @@ class DataLoader:
                 for i, o in enumerate(output):
                     if o == 1:
                         feature = self.__dolg.embedding(interested_img_path[i])
-                        feature_data.append({'registno': registno, 'feature': feature, 'page_id': page_ids[i]})
+                        feature_data.append({'registno': registno, 'feature': feature, 'page_url': page_urls[i]})
         return feature_data
 
 

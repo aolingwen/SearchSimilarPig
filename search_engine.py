@@ -34,7 +34,7 @@ class SearchEngine:
         redis_data = []
         for i, data in enumerate(raw_data):
             features.append(data['feature'])
-            tmp = {'registno':data['registno'], 'page_id':data['page_id'], 'id':i}
+            tmp = {'registno':data['registno'], 'page_url':data['page_url'], 'id':i}
             redis_data.append(tmp)
         features = np.array(features).astype(np.float32)
         features = np.ascontiguousarray(features)
@@ -56,21 +56,24 @@ class SearchEngine:
         self.__logger.debug("==========search begin===========")
         raw_data = self.__dataloader.get_embedding_data_for_query(registno)
         features = []
-        pageids = []
+        pageurls = []
         for i, data in enumerate(raw_data):
             features.append(np.array(data['feature']))
-            pageids.append(data['page_id'])
+            pageurls.append(data['page_url'])
         query = np.ascontiguousarray(features)
         start = time.time()
         D, I = self.__faiss_index.search(query, 50)
         end = time.time()
         self.__logger.debug('faiss search cost %ss' % str(end - start))
         for i in range(len(I)):
-            tmp_data = {'PAGE_ID':pageids[i], 'result':[]}
+            tmp_data = {'PAGE_URL':pageurls[i], 'result':[]}
             for j, id in enumerate(I[i]):
-                result_registno = self.__rediswrapper.search_registno_by_id(id)
+                result_registno, result_pageurl = self.__rediswrapper.search_registno_by_id(id)
+                if result_registno is None or result_pageurl is None:
+                    self.__logger.debug("result_registno is None. id is %s" % str(id))
+                    break
                 if len(tmp_data['result']) < self.__k and result_registno != registno:
-                    tmp_result = {'LicenseNo':result_registno, 'CosineSimilarity':float(D[i][j])}
+                    tmp_result = {'LicenseNo':result_registno, 'CosineSimilarity':float(D[i][j]), 'PAGE_URL':result_pageurl}
                     tmp_data['result'].append(tmp_result)
             result['result'].append(tmp_data)
         self.__logger.debug("==========search end===========")
@@ -90,10 +93,10 @@ class SearchEngine:
             raw_data = self.__dataloader.get_embedding_data_for_index(start_date, end_date)
         for data in raw_data:
             registno = data['registno']
-            page_id = data['page_id']
-            pageids = self.__rediswrapper.serach_pageids_by_registno(registno)
-            if pageids is None or page_id not in pageids:
-                data_wait_for_add.append({'id':cur_index, 'registno':registno, 'page_id':page_id, 'feature':data['feature']})
+            page_url = data['page_url']
+            pageurls = self.__rediswrapper.serach_pageids_by_registno(registno)
+            if pageurls is None or page_url not in pageurls:
+                data_wait_for_add.append({'id':cur_index, 'registno':registno, 'page_url':page_url, 'feature':data['feature']})
                 cur_index += 1
         count = cur_index-start_index
         if count > 0:

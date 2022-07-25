@@ -11,7 +11,7 @@ class RedisWrapper:
         :param redis_port: redis的端口
         '''
         self.__pool = redis.ConnectionPool(host=redis_ip, port=redis_port, decode_responses=True)
-        self.__faiss_prefix = 'SearchSimilarImages:KVStore:FaissID2RegistNO:'
+        self.__faiss_prefix = 'SearchSimilarImages:KVStore:FaissID2Detail:'
         self.__registno_prefix = 'SearchSimilarImages:KVStore:RegistNO2PageIDS:'
 
 
@@ -20,6 +20,8 @@ class RedisWrapper:
         for elem in conn.keys("SearchSimilarImages:KVStore:FaissID2RegistNO*"):
             conn.delete(elem)
         for elem in conn.keys("SearchSimilarImages:KVStore:RegistNO2PageIDS*"):
+            conn.delete(elem)
+        for elem in conn.keys("SearchSimilarImages:KVStore:FaissID2Detail*"):
             conn.delete(elem)
 
 
@@ -34,9 +36,9 @@ class RedisWrapper:
         for d in data:
             id = d['id']
             registno = d['registno']
-            page_id = d['page_id']
-            conn.set(self.__faiss_prefix+str(id), registno)
-            conn.lpush(self.__registno_prefix+registno, page_id)
+            page_url = d['page_url']
+            conn.set(self.__faiss_prefix+str(id), registno+'###'+page_url)
+            conn.lpush(self.__registno_prefix+registno, page_url)
 
     def search_registno_by_id(self, id):
         '''
@@ -45,7 +47,11 @@ class RedisWrapper:
         :return:保险单号，如果查不到则会返回None
         '''
         conn = redis.Redis(connection_pool=self.__pool)
-        return conn.get(self.__faiss_prefix+str(id))
+        result = conn.get(self.__faiss_prefix+str(id))
+        if result is None:
+            return None, None
+        result = result.split("###")
+        return result[0], result[1]
 
     def serach_pageids_by_registno(self, registno):
         '''
@@ -53,13 +59,13 @@ class RedisWrapper:
         :param registno: 保险单号
         :return: pageid列表，如果查不到则会返回None
         '''
-        page_ids = []
+        page_urls = []
         conn = redis.Redis(connection_pool=self.__pool)
-        for page_id in conn.lrange(self.__registno_prefix+registno, 0, -1):
-            page_ids.append(page_id)
-        if len(page_ids) == 0:
+        for page_url in conn.lrange(self.__registno_prefix+registno, 0, -1):
+            page_urls.append(page_url)
+        if len(page_urls) == 0:
             return None
-        return page_ids
+        return page_urls
 
 
 if __name__=='__main__':
